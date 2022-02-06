@@ -99,54 +99,6 @@ impl App {
                     }
                 }
             }
-
-            // TODO: Refactor
-            #[cfg(target_os = "windows")]
-            {
-                use cpal;
-                // setup incoming stream as per cpal module docs (except with build_input_stream)
-                let event_loop = cpal::EventLoop::new();
-                let input_device =
-                    cpal::default_input_device().expect("Failed cpal default_input_device");
-                let default_format = input_device
-                    .default_input_format()
-                    .expect("Failed cpal device default_input_format");
-                let _stream_id = event_loop
-                    .build_input_stream(&input_device, &default_format)
-                    .expect("Failed build_input_stream");
-
-                let mut tmp_buffer = Vec::with_capacity(2000);
-
-                event_loop.run(move |_stream_id, stream_data| {
-                    // Normalize the different types
-                    match stream_data {
-                        cpal::StreamData::Input {
-                            buffer: cpal::UnknownTypeInputBuffer::F32(cpal_buffer),
-                        } => {
-                            cpal_buffer.iter().for_each(|&x_f32| tmp_buffer.push(x_f32));
-                        }
-                        cpal::StreamData::Input {
-                            buffer: cpal::UnknownTypeInputBuffer::U16(cpal_buffer),
-                        } => {
-                            cpal_buffer.iter().for_each(|&x_u16| {
-                                tmp_buffer.push(f32::from(x_u16) / f32::from(std::i16::MAX) - 1.)
-                            });
-                        }
-                        cpal::StreamData::Input {
-                            buffer: cpal::UnknownTypeInputBuffer::I16(cpal_buffer),
-                        } => {
-                            cpal_buffer.iter().for_each(|&x_i16| {
-                                tmp_buffer.push(f32::from(x_i16) / f32::from(std::i16::MAX))
-                            });
-                        }
-                        _ => (),
-                    };
-
-                    let mut unlocked_buffer = shared_buffer.lock().unwrap();
-                    unlocked_buffer.push_latest_data(tmp_buffer.as_slice());
-                    tmp_buffer.clear();
-                });
-            }
         });
 
         loop {
