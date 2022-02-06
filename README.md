@@ -1,4 +1,7 @@
-# Rust TUI Audio Example
+# README:
+A fork , that reads an audio file, not live input from alsa
+# Original README:
+## Rust TUI Audio Example
 
 This is a proof-of-concept learning experiment that uses `tui-rs` and `wavy` (though any audio lib would do) to show a live waveform from the default recording source on the sound card.
 
